@@ -1,0 +1,1391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Formula Blitz — 60 Seconds</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,700;0,9..144,900;1,9..144,500&family=JetBrains+Mono:wght@400;500;700&family=Inter+Tight:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" />
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+
+<style>
+  :root {
+    --deep:    #2A0030;
+    --plum:    #610064;
+    --aston:   #920088;
+    --pink:    #D30063;
+    --orange:  #F93E26;
+    --cream:   #FAF6EE;
+    --paper:   #F4ECDC;
+    --ink:     #1A0220;
+    --ok:      #1F8A5C;
+    --bad:     #C8102E;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    height: 100%;
+    background: var(--deep);
+    color: var(--ink);
+    font-family: 'Inter Tight', sans-serif;
+    overflow: hidden;
+  }
+
+  body {
+    background:
+      radial-gradient(ellipse at 18% 12%, rgba(211,0,99,0.32), transparent 55%),
+      radial-gradient(ellipse at 82% 88%, rgba(249,62,38,0.22), transparent 55%),
+      radial-gradient(ellipse at 50% 50%, rgba(146,0,136,0.30), transparent 70%),
+      var(--deep);
+    position: relative;
+  }
+
+  /* subtle paper grain */
+  body::before {
+    content: "";
+    position: fixed; inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1, 0 0 0 0 1, 0 0 0 0 1, 0 0 0 0.045 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    pointer-events: none;
+    mix-blend-mode: overlay;
+    z-index: 0;
+  }
+
+  .stage {
+    position: relative;
+    z-index: 1;
+    height: 100vh;
+    height: 100dvh;
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    max-width: 880px;
+    margin: 0 auto;
+    padding: 22px 22px 18px;
+    gap: 12px;
+  }
+
+  /* HEADER */
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    color: var(--cream);
+  }
+  .brand {
+    display: flex; align-items: baseline; gap: 10px;
+    font-family: 'Fraunces', serif;
+    letter-spacing: -0.02em;
+  }
+  .brand .mark {
+    font-weight: 900; font-size: 28px;
+    color: var(--cream);
+  }
+  .brand .mark em {
+    font-style: italic;
+    color: var(--orange);
+    font-weight: 500;
+  }
+  .brand .sub {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: rgba(250,246,238,0.55);
+  }
+
+  .meters {
+    display: flex; gap: 14px; align-items: stretch;
+  }
+  .meter {
+    background: rgba(250,246,238,0.06);
+    border: 1px solid rgba(250,246,238,0.12);
+    border-radius: 12px;
+    padding: 8px 14px;
+    min-width: 88px;
+    text-align: center;
+    backdrop-filter: blur(6px);
+  }
+  .meter .label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: rgba(250,246,238,0.55);
+  }
+  .meter .value {
+    font-family: 'Fraunces', serif;
+    font-weight: 900;
+    font-size: 26px;
+    color: var(--cream);
+    line-height: 1.05;
+    font-variant-numeric: tabular-nums;
+  }
+  .meter.time .value { color: var(--orange); }
+  .meter.score .value { color: var(--cream); }
+  .meter.streak .value { color: var(--pink); }
+
+  .timebar {
+    grid-column: 1 / -1;
+    height: 4px;
+    background: rgba(250,246,238,0.08);
+    border-radius: 99px;
+    overflow: hidden;
+    margin-top: 12px;
+  }
+  .timebar > div {
+    height: 100%;
+    width: 100%;
+    background: linear-gradient(90deg, var(--orange), var(--pink));
+    transform-origin: left;
+    transition: transform 100ms linear;
+    border-radius: 99px;
+  }
+
+  /* CARD */
+  .card-wrap {
+    display: grid;
+    place-items: center;
+    perspective: 1600px;
+    padding: 12px 0;
+    min-height: 0;
+    height: 100%;
+  }
+
+  .card {
+    position: relative;
+    width: 100%;
+    max-width: 760px;
+    aspect-ratio: 16 / 11;
+    max-height: 100%;
+    transform-style: preserve-3d;
+    transition: transform 520ms cubic-bezier(0.7, 0, 0.2, 1);
+  }
+  .card.flip { transform: rotateY(180deg); }
+
+  .face {
+    position: absolute; inset: 0;
+    backface-visibility: hidden;
+    border-radius: 22px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow:
+      0 30px 60px -20px rgba(0,0,0,0.55),
+      0 12px 24px -12px rgba(0,0,0,0.4),
+      inset 0 1px 0 rgba(255,255,255,0.6);
+  }
+
+  /* FRONT — question */
+  .face.front {
+    background: var(--paper);
+    color: var(--ink);
+  }
+  .face.front::before {
+    content: "";
+    position: absolute; inset: 0;
+    background:
+      radial-gradient(circle at 90% 0%, rgba(249,62,38,0.12), transparent 45%),
+      radial-gradient(circle at 0% 100%, rgba(146,0,136,0.10), transparent 45%);
+    pointer-events: none;
+  }
+
+  .topband {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 22px;
+    background: var(--plum);
+    color: var(--cream);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+  }
+  .topband .topic {
+    color: var(--orange);
+    font-weight: 700;
+  }
+
+  .prompt {
+    flex: 1;
+    display: grid;
+    place-items: center;
+    padding: 20px 26px;
+    text-align: center;
+    position: relative;
+  }
+  .prompt .verb {
+    font-family: 'Fraunces', serif;
+    font-weight: 900;
+    font-size: clamp(22px, 3.6vw, 36px);
+    letter-spacing: -0.02em;
+    color: var(--plum);
+    margin-bottom: 8px;
+    line-height: 1;
+  }
+  .prompt .verb em {
+    font-style: italic;
+    color: var(--pink);
+  }
+  .prompt .expr {
+    font-size: clamp(28px, 4.6vw, 48px);
+    color: var(--ink);
+    margin-top: 6px;
+  }
+  .prompt .hint {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: rgba(26,2,32,0.55);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    margin-top: 14px;
+  }
+
+  /* BACK — feedback */
+  .face.back {
+    transform: rotateY(180deg);
+    color: var(--cream);
+    padding: 0;
+  }
+  .face.back.correct { background: linear-gradient(135deg, #1F8A5C, #0E5C3C); }
+  .face.back.wrong   { background: linear-gradient(135deg, var(--pink), var(--orange)); }
+
+  .verdict {
+    flex: 1;
+    display: grid;
+    place-items: center;
+    text-align: center;
+    padding: 24px;
+  }
+  .verdict .stamp {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-weight: 900;
+    font-size: clamp(48px, 8vw, 88px);
+    letter-spacing: -0.03em;
+    line-height: 0.95;
+    text-transform: uppercase;
+    margin-bottom: 14px;
+    text-shadow: 0 4px 0 rgba(0,0,0,0.18);
+  }
+  .verdict .truth {
+    font-size: clamp(20px, 3vw, 30px);
+    background: rgba(0,0,0,0.18);
+    padding: 12px 20px;
+    border-radius: 12px;
+    display: inline-block;
+  }
+  .verdict .truth-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    opacity: 0.75;
+    margin-bottom: 8px;
+  }
+
+  /* OPTIONS */
+  .options {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    padding: 6px 0 0;
+  }
+  .opt {
+    background: var(--cream);
+    border: 1.5px solid rgba(42,0,48,0.12);
+    border-radius: 14px;
+    padding: 16px 18px;
+    cursor: pointer;
+    text-align: left;
+    color: var(--ink);
+    font-size: 18px;
+    transition: transform 140ms ease, border-color 140ms ease, background 140ms ease, box-shadow 140ms ease;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    min-height: 64px;
+    box-shadow: 0 4px 0 rgba(42,0,48,0.18);
+  }
+  .opt:hover {
+    transform: translateY(-2px);
+    border-color: var(--aston);
+    box-shadow: 0 6px 0 var(--aston);
+  }
+  .opt:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--aston); }
+  .opt .key {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    font-size: 12px;
+    color: var(--cream);
+    background: var(--plum);
+    width: 28px; height: 28px;
+    border-radius: 8px;
+    display: grid; place-items: center;
+    flex-shrink: 0;
+  }
+  .opt .body { flex: 1; line-height: 1.2; }
+  .opt[disabled] { cursor: default; opacity: 0.65; }
+  .opt.right {
+    background: #DDF3E8;
+    border-color: var(--ok);
+    box-shadow: 0 4px 0 var(--ok);
+  }
+  .opt.right .key { background: var(--ok); }
+  .opt.wrong {
+    background: #FCE0E4;
+    border-color: var(--bad);
+    box-shadow: 0 4px 0 var(--bad);
+  }
+  .opt.wrong .key { background: var(--bad); }
+
+  /* OVERLAYS — start & end */
+  .overlay {
+    position: fixed; inset: 0;
+    z-index: 10;
+    display: grid;
+    place-items: center;
+    padding: 24px;
+    background:
+      radial-gradient(ellipse at 50% 30%, rgba(211,0,99,0.35), transparent 55%),
+      radial-gradient(ellipse at 50% 80%, rgba(249,62,38,0.18), transparent 55%),
+      rgba(20,0,24,0.78);
+    backdrop-filter: blur(14px);
+    transition: opacity 280ms ease, visibility 280ms ease;
+  }
+  .overlay.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+
+  .panel {
+    background: var(--paper);
+    border-radius: 28px;
+    padding: 38px 42px 32px;
+    max-width: 540px;
+    width: 100%;
+    text-align: center;
+    box-shadow: 0 30px 80px -20px rgba(0,0,0,0.6);
+    position: relative;
+    overflow: hidden;
+  }
+  .panel::before {
+    content: "";
+    position: absolute; top: 0; left: 0; right: 0;
+    height: 6px;
+    background: linear-gradient(90deg, var(--plum), var(--aston), var(--pink), var(--orange));
+  }
+
+  .panel .eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--aston);
+    margin-bottom: 6px;
+  }
+  .panel h1 {
+    font-family: 'Fraunces', serif;
+    font-weight: 900;
+    font-size: 64px;
+    letter-spacing: -0.04em;
+    color: var(--plum);
+    line-height: 0.92;
+    margin-bottom: 10px;
+  }
+  .panel h1 em {
+    font-style: italic;
+    color: var(--orange);
+    font-weight: 500;
+  }
+  .panel p {
+    color: rgba(26,2,32,0.75);
+    margin-bottom: 22px;
+    font-size: 16px;
+    line-height: 1.45;
+  }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin: 18px 0 22px;
+  }
+  .stat {
+    background: var(--cream);
+    border: 1.5px solid rgba(42,0,48,0.1);
+    border-radius: 14px;
+    padding: 14px 6px;
+  }
+  .stat .label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: rgba(26,2,32,0.5);
+  }
+  .stat .value {
+    font-family: 'Fraunces', serif;
+    font-weight: 900;
+    font-size: 30px;
+    color: var(--plum);
+    line-height: 1.1;
+  }
+  .stat.s2 .value { color: var(--pink); }
+  .stat.s3 .value { color: var(--orange); }
+
+  .btn {
+    background: var(--plum);
+    color: var(--cream);
+    border: none;
+    border-radius: 14px;
+    padding: 16px 30px;
+    font-family: 'Inter Tight', sans-serif;
+    font-weight: 700;
+    font-size: 16px;
+    letter-spacing: 0.04em;
+    cursor: pointer;
+    box-shadow: 0 6px 0 var(--deep);
+    transition: transform 120ms ease, box-shadow 120ms ease;
+    text-transform: uppercase;
+  }
+  .btn:hover { transform: translateY(-2px); box-shadow: 0 8px 0 var(--deep); }
+  .btn:active { transform: translateY(4px); box-shadow: 0 2px 0 var(--deep); }
+  .btn.accent { background: var(--orange); box-shadow: 0 6px 0 #B22A18; }
+  .btn.accent:hover { box-shadow: 0 8px 0 #B22A18; }
+  .btn.accent:active { box-shadow: 0 2px 0 #B22A18; }
+
+  .topics {
+    display: flex; flex-wrap: wrap; gap: 6px; justify-content: center;
+    margin: 14px 0 22px;
+  }
+  .chip {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9.5px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    background: rgba(146,0,136,0.1);
+    color: var(--plum);
+    border: 1px solid rgba(146,0,136,0.25);
+    padding: 5px 9px;
+    border-radius: 99px;
+  }
+
+  /* score reveal animation */
+  @keyframes pop {
+    0% { transform: scale(0.6); opacity: 0; }
+    60% { transform: scale(1.1); opacity: 1; }
+    100% { transform: scale(1); }
+  }
+  .panel.end h1 { animation: pop 600ms cubic-bezier(0.5, 0, 0.2, 1) both; }
+
+  /* shake on wrong */
+  @keyframes shake {
+    0%,100% { transform: translateX(0); }
+    20% { transform: translateX(-8px); }
+    40% { transform: translateX(8px); }
+    60% { transform: translateX(-5px); }
+    80% { transform: translateX(5px); }
+  }
+  .card.shake { animation: shake 360ms ease; }
+
+  /* score popup */
+  .popup {
+    position: absolute;
+    top: 30%; left: 50%;
+    transform: translate(-50%, 0);
+    font-family: 'Fraunces', serif;
+    font-weight: 900;
+    font-style: italic;
+    font-size: 42px;
+    pointer-events: none;
+    z-index: 5;
+    opacity: 0;
+  }
+  @keyframes float-up {
+    0% { transform: translate(-50%, 20px); opacity: 0; }
+    20% { opacity: 1; }
+    100% { transform: translate(-50%, -100px); opacity: 0; }
+  }
+  .popup.show { animation: float-up 900ms ease-out both; }
+  .popup.good { color: var(--orange); text-shadow: 0 2px 0 var(--plum); }
+  .popup.bad  { color: var(--bad); }
+
+  /* timer warning pulse */
+  @keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.08); }
+  }
+  .meter.time.warn .value {
+    animation: pulse 600ms ease-in-out infinite;
+    color: var(--bad) !important;
+  }
+
+  /* katex sizing inside options */
+  .opt .body .katex { font-size: 1em; }
+  .prompt .expr .katex { font-size: 1em; }
+
+  @media (max-width: 640px) {
+    .stage {
+      padding: 10px 12px 12px;
+      gap: 8px;
+    }
+
+    /* Header: keep on one row, drop the sub-line */
+    header {
+      flex-wrap: nowrap;
+      align-items: center;
+      gap: 10px;
+    }
+    .brand .mark { font-size: 18px; }
+    .brand .sub { display: none; }
+
+    .meters { gap: 6px; flex-shrink: 0; }
+    .meter {
+      min-width: 0;
+      padding: 5px 8px;
+      border-radius: 9px;
+    }
+    .meter .label {
+      font-size: 8px;
+      letter-spacing: 0.16em;
+    }
+    .meter .value { font-size: 17px; }
+    .timebar { margin-top: 8px; height: 3px; }
+
+    /* Card: compact, fixed aspect that leaves room for options */
+    .card-wrap { padding: 4px 0; }
+    .card {
+      aspect-ratio: auto;
+      height: 100%;
+      max-height: 260px;
+    }
+    .face { border-radius: 16px; }
+    .topband {
+      padding: 8px 14px;
+      font-size: 9px;
+      letter-spacing: 0.18em;
+    }
+    .prompt { padding: 10px 14px; }
+    .prompt .verb {
+      font-size: 18px;
+      margin-bottom: 4px;
+    }
+    .prompt .expr { font-size: 24px; margin-top: 2px; }
+    .prompt .hint {
+      font-size: 9.5px;
+      margin-top: 8px;
+      letter-spacing: 0.12em;
+    }
+    .verdict { padding: 14px; }
+    .verdict .stamp {
+      font-size: 40px;
+      margin-bottom: 10px;
+    }
+    .verdict .truth { font-size: 18px; padding: 8px 14px; }
+    .verdict .truth-label { font-size: 9px; margin-bottom: 4px; }
+
+    /* Options: KEEP 2x2 grid on mobile so all four are visible */
+    .options {
+      grid-template-columns: 1fr 1fr;
+      gap: 7px;
+    }
+    .opt {
+      padding: 9px 10px;
+      min-height: 52px;
+      font-size: 14px;
+      gap: 8px;
+      border-radius: 10px;
+      box-shadow: 0 3px 0 rgba(42,0,48,0.18);
+    }
+    .opt .key {
+      width: 22px; height: 22px;
+      font-size: 10px;
+      border-radius: 6px;
+    }
+    .opt:hover {
+      transform: none;
+      box-shadow: 0 3px 0 var(--aston);
+    }
+
+    /* Float-up popup smaller so it doesn't dominate the small card */
+    .popup { font-size: 32px; }
+
+    /* Overlays — tighter panel */
+    .panel { padding: 28px 22px 22px; border-radius: 22px; }
+    .panel h1 { font-size: 44px; }
+    .panel p { font-size: 14px; margin-bottom: 16px; }
+    .stats-grid { gap: 7px; margin: 14px 0 18px; }
+    .stat { padding: 10px 4px; border-radius: 10px; }
+    .stat .value { font-size: 24px; }
+    .topics { gap: 4px; margin: 10px 0 18px; }
+    .chip { font-size: 8.5px; padding: 4px 7px; }
+    .btn { padding: 13px 24px; font-size: 14px; }
+  }
+
+  /* Very small screens (iPhone SE, narrow Androids) */
+  @media (max-width: 380px) {
+    .brand .mark { font-size: 16px; }
+    .meter { padding: 4px 6px; }
+    .meter .value { font-size: 15px; }
+    .meter .label { font-size: 7.5px; }
+    .card { max-height: 230px; }
+    .prompt .verb { font-size: 16px; }
+    .prompt .expr { font-size: 20px; }
+    .opt { font-size: 13px; min-height: 48px; padding: 8px; }
+    .panel h1 { font-size: 38px; }
+  }
+
+  /* Short screens (landscape phones) — keep card tiny */
+  @media (max-height: 700px) and (max-width: 640px) {
+    .card { max-height: 200px; }
+    .prompt .verb { font-size: 16px; }
+    .prompt .expr { font-size: 20px; }
+    .opt { min-height: 46px; padding: 8px 10px; font-size: 13px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="stage">
+  <header>
+    <div class="brand">
+      <div>
+        <div class="mark">Formula <em>Blitz</em></div>
+        <div class="sub">60 seconds · pure recall</div>
+      </div>
+    </div>
+    <div class="meters">
+      <div class="meter time" id="meterTime">
+        <div class="label">Time</div>
+        <div class="value" id="timeVal">60</div>
+      </div>
+      <div class="meter score">
+        <div class="label">Score</div>
+        <div class="value" id="scoreVal">0</div>
+      </div>
+      <div class="meter streak">
+        <div class="label">Streak</div>
+        <div class="value" id="streakVal">0</div>
+      </div>
+    </div>
+    <div class="timebar"><div id="timeFill"></div></div>
+  </header>
+
+  <div class="card-wrap">
+    <div id="popup" class="popup"></div>
+    <div class="card" id="card">
+      <div class="face front">
+        <div class="topband">
+          <span id="topicTag">— · —</span>
+          <span>Q<span id="qNum">1</span></span>
+        </div>
+        <div class="prompt">
+          <div class="verb" id="verb">Loading…</div>
+          <div class="expr" id="expr"></div>
+          <div class="hint" id="hint"></div>
+        </div>
+      </div>
+      <div class="face back" id="backFace">
+        <div class="verdict">
+          <div class="stamp" id="stamp">Correct</div>
+          <div>
+            <div class="truth-label">Answer</div>
+            <div class="truth" id="truth"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="options" id="options"></div>
+</div>
+
+<!-- START OVERLAY -->
+<div class="overlay" id="startOverlay">
+  <div class="panel">
+    <div class="eyebrow">A-Level · Formula Recall</div>
+    <h1>Formula <em>Blitz</em></h1>
+    <p>Sixty seconds. As many right as you can. Differentiate, integrate, identify, recall — drawn straight from your reference cards.</p>
+    <div class="topics">
+      <span class="chip">Double Angles</span>
+      <span class="chip">Pythagorean</span>
+      <span class="chip">Derivatives</span>
+      <span class="chip">Integrals</span>
+      <span class="chip">SUVAT</span>
+      <span class="chip">AP / GP</span>
+      <span class="chip">Binomial</span>
+      <span class="chip">By Parts</span>
+      <span class="chip">Reverse Chain</span>
+    </div>
+    <button class="btn accent" id="startBtn">Start the clock</button>
+  </div>
+</div>
+
+<!-- END OVERLAY -->
+<div class="overlay hidden" id="endOverlay">
+  <div class="panel end">
+    <div class="eyebrow" id="endRank">Final Score</div>
+    <h1 id="finalScore">0</h1>
+    <p id="endMessage">Time's up. Here's how it went.</p>
+    <div class="stats-grid">
+      <div class="stat"><div class="label">Correct</div><div class="value" id="endCorrect">0</div></div>
+      <div class="stat s2"><div class="label">Best Streak</div><div class="value" id="endStreak">0</div></div>
+      <div class="stat s3"><div class="label">Accuracy</div><div class="value" id="endAcc">0%</div></div>
+    </div>
+    <button class="btn accent" id="againBtn">Run it back</button>
+  </div>
+</div>
+
+<script>
+/* ==========================================================
+   QUESTION POOL
+   Every fact below is taken DIRECTLY from one of the seven
+   reference images supplied. Distractors are deliberately
+   plausible (sign flips, swapped functions, off-by-one)
+   to test genuine recall — but the CORRECT answer is always
+   exactly what the reference card says.
+   ========================================================== */
+
+const QUESTIONS = [
+  /* ---------- DOUBLE ANGLES (Image 1) ---------- */
+  {
+    topic: 'Double Angles',
+    verb: 'Expand',
+    expr: '\\sin(2A)',
+    hint: 'Double angle formula',
+    correct: '2\\sin A \\cos A',
+    distractors: ['2\\cos A \\sin A - 1', '\\sin^2 A - \\cos^2 A', '2\\sin A - 2\\cos A']
+  },
+  {
+    topic: 'Double Angles',
+    verb: 'Expand',
+    expr: '\\cos(2A)',
+    hint: 'In terms of cos² and sin²',
+    correct: '\\cos^2 A - \\sin^2 A',
+    distractors: ['\\sin^2 A - \\cos^2 A', '2\\sin A \\cos A', '1 - 2\\cos^2 A']
+  },
+  {
+    topic: 'Double Angles',
+    verb: 'Rewrite',
+    expr: '\\cos(2A) \\text{ using only } \\cos^2 A',
+    hint: '',
+    correct: '2\\cos^2 A - 1',
+    distractors: ['1 - 2\\cos^2 A', '2\\cos^2 A + 1', '\\cos^2 A - 1']
+  },
+  {
+    topic: 'Double Angles',
+    verb: 'Rewrite',
+    expr: '\\cos(2A) \\text{ using only } \\sin^2 A',
+    hint: '',
+    correct: '1 - 2\\sin^2 A',
+    distractors: ['2\\sin^2 A - 1', '1 + 2\\sin^2 A', '\\sin^2 A - 1']
+  },
+  {
+    topic: 'Double Angles',
+    verb: 'Expand',
+    expr: '\\tan(2A)',
+    hint: '',
+    correct: '\\dfrac{2\\tan A}{1 - \\tan^2 A}',
+    distractors: ['\\dfrac{2\\tan A}{1 + \\tan^2 A}', '\\dfrac{\\tan A}{1 - \\tan^2 A}', '\\dfrac{1 - \\tan^2 A}{2\\tan A}']
+  },
+
+  /* ---------- PYTHAGOREAN IDENTITIES (Image 6) ---------- */
+  {
+    topic: 'Pythagorean',
+    verb: 'Complete the identity',
+    expr: '\\sin^2\\theta + \\cos^2\\theta = \\,?',
+    hint: '',
+    correct: '1',
+    distractors: ['0', '2', '\\sec^2\\theta']
+  },
+  {
+    topic: 'Pythagorean',
+    verb: 'Complete the identity',
+    expr: '1 + \\tan^2\\theta = \\,?',
+    hint: '',
+    correct: '\\sec^2\\theta',
+    distractors: ['\\csc^2\\theta', '\\cot^2\\theta', '\\tan^2\\theta - 1']
+  },
+  {
+    topic: 'Pythagorean',
+    verb: 'Complete the identity',
+    expr: '1 + \\cot^2\\theta = \\,?',
+    hint: '',
+    correct: '\\csc^2\\theta',
+    distractors: ['\\sec^2\\theta', '1 - \\tan^2\\theta', '\\cot^2\\theta - 1']
+  },
+
+  /* ---------- DERIVATIVES (Image 2) ---------- */
+  {
+    topic: 'Derivative',
+    verb: 'Differentiate',
+    expr: 'x^n',
+    hint: '',
+    correct: 'nx^{n-1}',
+    distractors: ['\\dfrac{x^{n+1}}{n+1}', 'nx^n', 'x^{n-1}']
+  },
+  {
+    topic: 'Derivative',
+    verb: 'Differentiate',
+    expr: 'e^{kx}',
+    hint: '',
+    correct: 'ke^{kx}',
+    distractors: ['e^{kx}', '\\dfrac{1}{k}e^{kx}', 'kxe^{kx-1}']
+  },
+  {
+    topic: 'Derivative',
+    verb: 'Differentiate',
+    expr: 'a^x',
+    hint: '',
+    correct: 'a^x \\ln a',
+    distractors: ['xa^{x-1}', '\\dfrac{a^x}{\\ln a}', 'a^x']
+  },
+  {
+    topic: 'Derivative',
+    verb: 'Differentiate',
+    expr: '\\ln x',
+    hint: '',
+    correct: '\\dfrac{1}{x}',
+    distractors: ['x \\ln x', '\\dfrac{1}{x \\ln x}', '-\\dfrac{1}{x}']
+  },
+  {
+    topic: 'Derivative',
+    verb: 'Differentiate',
+    expr: '\\sin(kx)',
+    hint: '',
+    correct: 'k\\cos(kx)',
+    distractors: ['-k\\cos(kx)', '\\cos(kx)', 'k\\sin(kx)']
+  },
+  {
+    topic: 'Derivative',
+    verb: 'Differentiate',
+    expr: '\\cos(kx)',
+    hint: 'Mind the sign',
+    correct: '-k\\sin(kx)',
+    distractors: ['k\\sin(kx)', '-\\sin(kx)', 'k\\cos(kx)']
+  },
+  {
+    topic: 'Derivative',
+    verb: 'Differentiate',
+    expr: '\\tan(kx)',
+    hint: '',
+    correct: 'k\\sec^2(kx)',
+    distractors: ['\\sec^2(kx)', '-k\\csc^2(kx)', 'k\\tan^2(kx)']
+  },
+  {
+    topic: 'Derivative',
+    verb: 'Differentiate',
+    expr: '\\sec x',
+    hint: '',
+    correct: '\\sec x \\tan x',
+    distractors: ['-\\csc x \\cot x', '\\sec^2 x', '\\tan x']
+  },
+  {
+    topic: 'Derivative',
+    verb: 'Differentiate',
+    expr: '\\csc x',
+    hint: 'Mind the sign',
+    correct: '-\\csc x \\cot x',
+    distractors: ['\\csc x \\cot x', '\\sec x \\tan x', '-\\cot^2 x']
+  },
+  {
+    topic: 'Derivative',
+    verb: 'Differentiate',
+    expr: '\\cot x',
+    hint: '',
+    correct: '-\\csc^2 x',
+    distractors: ['\\csc^2 x', '-\\sec^2 x', '\\sec x \\tan x']
+  },
+  {
+    topic: 'Derivative',
+    verb: 'Differentiate',
+    expr: '\\arcsin x',
+    hint: '',
+    correct: '\\dfrac{1}{\\sqrt{1 - x^2}}',
+    distractors: ['\\dfrac{-1}{\\sqrt{1 - x^2}}', '\\dfrac{1}{1 + x^2}', '\\dfrac{1}{\\sqrt{x^2 - 1}}']
+  },
+  {
+    topic: 'Derivative',
+    verb: 'Differentiate',
+    expr: '\\arccos x',
+    hint: 'Mind the sign',
+    correct: '\\dfrac{-1}{\\sqrt{1 - x^2}}',
+    distractors: ['\\dfrac{1}{\\sqrt{1 - x^2}}', '\\dfrac{-1}{1 + x^2}', '\\dfrac{1}{\\sqrt{1 + x^2}}']
+  },
+  {
+    topic: 'Derivative',
+    verb: 'Differentiate',
+    expr: '\\arctan x',
+    hint: '',
+    correct: '\\dfrac{1}{1 + x^2}',
+    distractors: ['\\dfrac{1}{\\sqrt{1 - x^2}}', '\\dfrac{1}{1 - x^2}', '\\dfrac{-1}{1 + x^2}']
+  },
+
+  /* ---------- STANDARD INTEGRALS (Image 3) ---------- */
+  {
+    topic: 'Integral',
+    verb: 'Integrate',
+    expr: 'x^n \\quad (n \\neq -1)',
+    hint: '+ c',
+    correct: '\\dfrac{x^{n+1}}{n+1} + c',
+    distractors: ['nx^{n-1} + c', '\\dfrac{x^{n-1}}{n-1} + c', '\\dfrac{x^n}{n} + c']
+  },
+  {
+    topic: 'Integral',
+    verb: 'Integrate',
+    expr: '\\dfrac{1}{x}',
+    hint: '+ c',
+    correct: '\\ln|x| + c',
+    distractors: ['\\ln x + c', '-\\dfrac{1}{x^2} + c', '\\dfrac{1}{\\ln x} + c']
+  },
+  {
+    topic: 'Integral',
+    verb: 'Integrate',
+    expr: 'e^{kx}',
+    hint: '+ c',
+    correct: '\\dfrac{1}{k}e^{kx} + c',
+    distractors: ['ke^{kx} + c', 'e^{kx} + c', '\\dfrac{1}{k+1}e^{kx} + c']
+  },
+  {
+    topic: 'Integral',
+    verb: 'Integrate',
+    expr: '\\cos(kx)',
+    hint: '+ c',
+    correct: '\\dfrac{1}{k}\\sin(kx) + c',
+    distractors: ['-\\dfrac{1}{k}\\sin(kx) + c', 'k\\sin(kx) + c', '\\sin(kx) + c']
+  },
+  {
+    topic: 'Integral',
+    verb: 'Integrate',
+    expr: '\\sin(kx)',
+    hint: 'Mind the sign · + c',
+    correct: '-\\dfrac{1}{k}\\cos(kx) + c',
+    distractors: ['\\dfrac{1}{k}\\cos(kx) + c', '-k\\cos(kx) + c', '-\\cos(kx) + c']
+  },
+  {
+    topic: 'Integral',
+    verb: 'Integrate',
+    expr: '\\sec^2(kx)',
+    hint: '+ c',
+    correct: '\\dfrac{1}{k}\\tan(kx) + c',
+    distractors: ['k\\tan(kx) + c', '-\\dfrac{1}{k}\\cot(kx) + c', '\\tan(kx) + c']
+  },
+  {
+    topic: 'Integral',
+    verb: 'Integrate',
+    expr: '\\csc^2(kx)',
+    hint: 'Mind the sign · + c',
+    correct: '-\\dfrac{1}{k}\\cot(kx) + c',
+    distractors: ['\\dfrac{1}{k}\\cot(kx) + c', '\\dfrac{1}{k}\\tan(kx) + c', '-k\\cot(kx) + c']
+  },
+  {
+    topic: 'Integral',
+    verb: 'Integrate',
+    expr: '\\tan x',
+    hint: '+ c · derive via reverse chain on sin/cos',
+    correct: '\\ln|\\sec x| + c',
+    distractors: ['\\ln|\\sin x| + c', '\\ln|\\cos x| + c', '\\sec^2 x + c']
+  },
+  {
+    topic: 'Integral',
+    verb: 'Integrate',
+    expr: '\\cot x',
+    hint: '+ c',
+    correct: '\\ln|\\sin x| + c',
+    distractors: ['\\ln|\\cos x| + c', '-\\ln|\\sin x| + c', '-\\csc^2 x + c']
+  },
+
+  /* ---------- BY PARTS / REVERSE CHAIN (Image 4) ---------- */
+  {
+    topic: 'By Parts',
+    verb: 'State the formula',
+    expr: '\\int u\\,\\dfrac{dv}{dx}\\,dx = \\,?',
+    hint: 'Integration by parts',
+    correct: 'uv - \\int v\\,\\dfrac{du}{dx}\\,dx',
+    distractors: ['uv + \\int v\\,\\dfrac{du}{dx}\\,dx', '\\int v\\,\\dfrac{du}{dx}\\,dx - uv', 'uv - \\int u\\,\\dfrac{dv}{dx}\\,dx']
+  },
+  {
+    topic: 'By Parts',
+    verb: 'Integrate using by parts',
+    expr: '\\int \\ln x \\, dx',
+    hint: 'Take u = ln x, dv/dx = 1',
+    correct: 'x\\ln x - x + c',
+    distractors: ['x\\ln x + x + c', '\\ln x - x + c', '\\dfrac{(\\ln x)^2}{2} + c']
+  },
+  {
+    topic: 'Reverse Chain',
+    verb: 'Apply reverse chain',
+    expr: '\\int f\'(x)\\,[f(x)]^n \\, dx',
+    hint: '+ c',
+    correct: '\\dfrac{[f(x)]^{n+1}}{n+1} + c',
+    distractors: ['\\dfrac{[f(x)]^{n-1}}{n-1} + c', 'n[f(x)]^{n-1} + c', '[f(x)]^{n+1}\\,f\'(x) + c']
+  },
+  {
+    topic: 'Reverse Chain',
+    verb: 'Apply reverse chain',
+    expr: '\\int \\dfrac{f\'(x)}{f(x)} \\, dx',
+    hint: '+ c',
+    correct: '\\ln|f(x)| + c',
+    distractors: ['\\ln|f\'(x)| + c', '\\dfrac{1}{f(x)} + c', '-\\dfrac{f\'(x)}{[f(x)]^2} + c']
+  },
+  {
+    topic: 'Trig Powers',
+    verb: 'Rewrite for integration',
+    expr: '\\cos^2 x',
+    hint: 'Use a double angle',
+    correct: '\\dfrac{1}{2}(1 + \\cos 2x)',
+    distractors: ['\\dfrac{1}{2}(1 - \\cos 2x)', '\\dfrac{1}{2}(1 + \\sin 2x)', '\\dfrac{1}{2}(\\cos 2x - 1)']
+  },
+  {
+    topic: 'Trig Powers',
+    verb: 'Rewrite for integration',
+    expr: '\\sin^2 x',
+    hint: 'Use a double angle',
+    correct: '\\dfrac{1}{2}(1 - \\cos 2x)',
+    distractors: ['\\dfrac{1}{2}(1 + \\cos 2x)', '\\dfrac{1}{2}(1 - \\sin 2x)', '\\dfrac{1}{2}(\\cos 2x - 1)']
+  },
+
+  /* ---------- SUVAT (Image 5) ---------- */
+  {
+    topic: 'SUVAT',
+    verb: 'Formula for final velocity',
+    expr: 'v = \\,?',
+    hint: 'No s involved',
+    correct: 'u + at',
+    distractors: ['u - at', 'ut + \\tfrac{1}{2}at^2', 'u^2 + 2as']
+  },
+  {
+    topic: 'SUVAT',
+    verb: 'Displacement using u, a, t',
+    expr: 's = \\,?',
+    hint: 'No v',
+    correct: 'ut + \\tfrac{1}{2}at^2',
+    distractors: ['vt - \\tfrac{1}{2}at^2', '\\tfrac{1}{2}(u + v)t', 'u + at']
+  },
+  {
+    topic: 'SUVAT',
+    verb: 'Displacement using v, a, t',
+    expr: 's = \\,?',
+    hint: 'No u',
+    correct: 'vt - \\tfrac{1}{2}at^2',
+    distractors: ['vt + \\tfrac{1}{2}at^2', 'ut + \\tfrac{1}{2}at^2', '\\tfrac{1}{2}(u + v)t']
+  },
+  {
+    topic: 'SUVAT',
+    verb: 'Displacement using u, v, t',
+    expr: 's = \\,?',
+    hint: 'Average velocity × time',
+    correct: '\\tfrac{1}{2}(u + v)t',
+    distractors: ['(u + v)t', '\\tfrac{1}{2}(v - u)t', 'ut + vt']
+  },
+  {
+    topic: 'SUVAT',
+    verb: 'Equation with no t',
+    expr: 'v^2 = \\,?',
+    hint: '',
+    correct: 'u^2 + 2as',
+    distractors: ['u^2 - 2as', 'u^2 + 2at', '(u + at)^2']
+  },
+
+  /* ---------- AP / GP / BINOMIAL (Image 7) ---------- */
+  {
+    topic: 'AP',
+    verb: 'nth term of an AP',
+    expr: 'u_n = \\,?',
+    hint: 'First term a, common difference d',
+    correct: 'a + (n-1)d',
+    distractors: ['ar^{n-1}', 'a + nd', 'an + d']
+  },
+  {
+    topic: 'AP',
+    verb: 'Sum of n terms (AP)',
+    expr: 'S_n = \\,?',
+    hint: 'In terms of a, d, n',
+    correct: '\\tfrac{n}{2}\\bigl(2a + (n-1)d\\bigr)',
+    distractors: ['\\tfrac{n}{2}\\bigl(a + (n-1)d\\bigr)', 'n\\bigl(2a + (n-1)d\\bigr)', '\\tfrac{a(1 - r^n)}{1 - r}']
+  },
+  {
+    topic: 'GP',
+    verb: 'nth term of a GP',
+    expr: 'u_n = \\,?',
+    hint: 'First term a, common ratio r',
+    correct: 'ar^{n-1}',
+    distractors: ['a + (n-1)r', 'ar^n', 'a(r-1)^{n-1}']
+  },
+  {
+    topic: 'GP',
+    verb: 'Sum of n terms (GP)',
+    expr: 'S_n = \\,?',
+    hint: '',
+    correct: '\\dfrac{a(1 - r^n)}{1 - r}',
+    distractors: ['\\dfrac{a(1 + r^n)}{1 - r}', '\\dfrac{a(r^n - 1)}{r + 1}', '\\dfrac{a}{1 - r}']
+  },
+  {
+    topic: 'GP',
+    verb: 'Sum to infinity (|r| < 1)',
+    expr: 'S_\\infty = \\,?',
+    hint: '',
+    correct: '\\dfrac{a}{1 - r}',
+    distractors: ['\\dfrac{a}{1 + r}', '\\dfrac{a(1 - r)}{r}', '\\dfrac{1}{1 - r}']
+  },
+  {
+    topic: 'Binomial',
+    verb: 'Convergence condition for (1+x)ⁿ, n fractional',
+    expr: '\\text{Valid for }\\,?',
+    hint: '',
+    correct: '|x| < 1',
+    distractors: ['|x| > 1', '|x| \\leq 1', 'x > 0']
+  },
+  {
+    topic: 'Binomial',
+    verb: 'Third term of (1+x)ⁿ expansion',
+    expr: '(1+x)^n = 1 + nx + \\,? \\,+ \\dots',
+    hint: 'n fractional/negative',
+    correct: '\\dfrac{n(n-1)}{2!}\\,x^2',
+    distractors: ['\\dfrac{n(n+1)}{2!}\\,x^2', '\\dfrac{n!}{2!(n-2)!}\\,x^2', 'n(n-1)\\,x^2']
+  },
+  {
+    topic: 'Binomial',
+    verb: 'Convergence for (a + bx)ⁿ',
+    expr: '\\text{Valid for }\\,?',
+    hint: 'After factoring out aⁿ',
+    correct: '\\left|\\tfrac{bx}{a}\\right| < 1',
+    distractors: ['\\left|\\tfrac{ax}{b}\\right| < 1', '|bx| < 1', '|x| < a']
+  }
+];
+
+/* ==========================================================
+   GAME ENGINE
+   ========================================================== */
+
+const TOTAL_TIME = 60;
+let timeLeft = TOTAL_TIME;
+let score = 0;
+let streak = 0;
+let bestStreak = 0;
+let correctCount = 0;
+let answeredCount = 0;
+let qNum = 0;
+let timer = null;
+let locked = false;
+let currentQ = null;
+let recentTopics = [];
+
+const $ = id => document.getElementById(id);
+
+function shuffle(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function pickQuestion() {
+  // Avoid showing the same topic 3 times in a row
+  let pool = QUESTIONS;
+  if (recentTopics.length >= 2 && recentTopics[0] === recentTopics[1]) {
+    pool = QUESTIONS.filter(q => q.topic !== recentTopics[0]);
+  }
+  const q = pool[Math.floor(Math.random() * pool.length)];
+  recentTopics.unshift(q.topic);
+  if (recentTopics.length > 2) recentTopics.pop();
+  return q;
+}
+
+function renderTeX(target, tex) {
+  target.innerHTML = '';
+  try {
+    katex.render(tex, target, { throwOnError: false, displayMode: false });
+  } catch (e) {
+    target.textContent = tex;
+  }
+}
+
+function showQuestion() {
+  locked = false;
+  qNum++;
+  $('qNum').textContent = qNum;
+
+  currentQ = pickQuestion();
+
+  // Topic tag + verb
+  $('topicTag').textContent = currentQ.topic;
+  $('verb').innerHTML = currentQ.verb.replace(/Differentiate|Integrate/i, m => `<em>${m}</em>`);
+
+  // Expression
+  if (currentQ.expr) {
+    renderTeX($('expr'), currentQ.expr);
+    $('expr').style.display = '';
+  } else {
+    $('expr').style.display = 'none';
+  }
+
+  // Hint
+  $('hint').textContent = currentQ.hint || '';
+
+  // Build options
+  const optsContainer = $('options');
+  optsContainer.innerHTML = '';
+  const allOpts = shuffle([currentQ.correct, ...currentQ.distractors]);
+  const keys = ['A', 'B', 'C', 'D'];
+
+  allOpts.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'opt';
+    btn.dataset.value = opt;
+    btn.innerHTML = `<span class="key">${keys[i]}</span><span class="body"></span>`;
+    renderTeX(btn.querySelector('.body'), opt);
+    btn.addEventListener('click', () => onAnswer(btn, opt));
+    optsContainer.appendChild(btn);
+  });
+
+  // Reset card facing
+  $('card').classList.remove('flip');
+}
+
+function onAnswer(btn, value) {
+  if (locked) return;
+  locked = true;
+
+  const isCorrect = value === currentQ.correct;
+  answeredCount++;
+
+  // Highlight chosen + correct
+  document.querySelectorAll('.opt').forEach(b => {
+    b.disabled = true;
+    if (b.dataset.value === currentQ.correct) b.classList.add('right');
+  });
+  if (!isCorrect) btn.classList.add('wrong');
+
+  // Update meters + popup
+  const popup = $('popup');
+  popup.classList.remove('show', 'good', 'bad');
+  void popup.offsetWidth;
+
+  if (isCorrect) {
+    correctCount++;
+    streak++;
+    if (streak > bestStreak) bestStreak = streak;
+    const bonus = streak >= 5 ? 3 : streak >= 3 ? 2 : 1;
+    score += bonus;
+    popup.textContent = bonus > 1 ? `+${bonus} · ×${streak}` : `+${bonus}`;
+    popup.classList.add('show', 'good');
+
+    $('backFace').classList.remove('wrong');
+    $('backFace').classList.add('correct');
+    $('stamp').textContent = streak >= 5 ? 'On fire!' : streak >= 3 ? 'Streak!' : 'Correct';
+  } else {
+    streak = 0;
+    popup.textContent = '✗';
+    popup.classList.add('show', 'bad');
+    $('card').classList.add('shake');
+    setTimeout(() => $('card').classList.remove('shake'), 400);
+
+    $('backFace').classList.remove('correct');
+    $('backFace').classList.add('wrong');
+    $('stamp').textContent = 'Wrong';
+  }
+
+  renderTeX($('truth'), currentQ.correct);
+
+  $('scoreVal').textContent = score;
+  $('streakVal').textContent = streak;
+
+  // Flip after a beat, then load next
+  setTimeout(() => {
+    $('card').classList.add('flip');
+  }, 350);
+
+  setTimeout(() => {
+    if (timeLeft > 0) showQuestion();
+  }, 1200);
+}
+
+function tick() {
+  timeLeft -= 0.1;
+  if (timeLeft <= 0) {
+    timeLeft = 0;
+    endGame();
+  }
+  $('timeVal').textContent = Math.ceil(timeLeft);
+  $('timeFill').style.transform = `scaleX(${timeLeft / TOTAL_TIME})`;
+  if (timeLeft <= 10) $('meterTime').classList.add('warn');
+}
+
+function startGame() {
+  // reset state
+  timeLeft = TOTAL_TIME;
+  score = 0;
+  streak = 0;
+  bestStreak = 0;
+  correctCount = 0;
+  answeredCount = 0;
+  qNum = 0;
+  recentTopics = [];
+
+  $('scoreVal').textContent = '0';
+  $('streakVal').textContent = '0';
+  $('timeVal').textContent = TOTAL_TIME;
+  $('timeFill').style.transform = 'scaleX(1)';
+  $('meterTime').classList.remove('warn');
+
+  $('startOverlay').classList.add('hidden');
+  $('endOverlay').classList.add('hidden');
+
+  showQuestion();
+
+  if (timer) clearInterval(timer);
+  timer = setInterval(tick, 100);
+}
+
+function endGame() {
+  clearInterval(timer);
+  timer = null;
+  locked = true;
+
+  // Disable any open options
+  document.querySelectorAll('.opt').forEach(b => b.disabled = true);
+
+  $('finalScore').textContent = score;
+  $('endCorrect').textContent = correctCount;
+  $('endStreak').textContent = bestStreak;
+  const acc = answeredCount === 0 ? 0 : Math.round((correctCount / answeredCount) * 100);
+  $('endAcc').textContent = acc + '%';
+
+  // Rank message
+  let rank = 'Final Score';
+  let msg = "Time's up. Here's how it went.";
+  if (score >= 30)      { rank = '⚡ Untouchable'; msg = "Genuinely scary recall. Are you the mark scheme?"; }
+  else if (score >= 22) { rank = '★ Excellent';    msg = "That's exam-day fluency. Sharp."; }
+  else if (score >= 15) { rank = '◆ Strong';       msg = "Solid command. A little polish on the edge cases."; }
+  else if (score >= 8)  { rank = '◇ Building';     msg = "The shapes are there — drill the trickier sign-flips."; }
+  else                  { rank = '○ Warming up';   msg = "Run it back. The first one is always slowest."; }
+  $('endRank').textContent = rank;
+  $('endMessage').textContent = msg;
+
+  $('endOverlay').classList.remove('hidden');
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  $('startBtn').addEventListener('click', startGame);
+  $('againBtn').addEventListener('click', startGame);
+
+  // Keyboard A/B/C/D
+  document.addEventListener('keydown', (e) => {
+    if (locked) return;
+    const map = { a: 0, b: 1, c: 2, d: 3, '1': 0, '2': 1, '3': 2, '4': 3 };
+    const idx = map[e.key.toLowerCase()];
+    if (idx !== undefined) {
+      const opts = document.querySelectorAll('.opt');
+      if (opts[idx]) opts[idx].click();
+    }
+  });
+});
+</script>
+</body>
+</html>
